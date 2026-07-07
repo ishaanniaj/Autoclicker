@@ -4,8 +4,9 @@ A simple cross-platform autoclicker with a small Tkinter GUI. Clicks
 automatically at a rate you choose, toggled with the global **`** (backtick) hotkey.
 
 ## Download (macOS, Apple Silicon)
-**[⬇︎ Download the latest release](https://github.com/ishaanniaj/Autoclicker/releases/latest)** —
-grab `Autoclicker-macOS-AppleSilicon.zip`, unzip, and drag **Autoclicker.app** to Applications.
+**[⬇︎ Download Autoclicker.dmg](https://github.com/ishaanniaj/Autoclicker/releases/latest/download/Autoclicker.dmg)** —
+this link downloads the app directly. Open the `.dmg` and drag **Autoclicker**
+onto the **Applications** folder.
 
 First launch: right-click the app → **Open** → **Open** (it isn't signed by a
 registered Apple developer). Then enable it under **System Settings → Privacy &
