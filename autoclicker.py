@@ -13,6 +13,7 @@ Features
 Requires: pynput   ->   pip install pynput
 """
 
+import ctypes
 import os
 import sys
 import threading
@@ -37,6 +38,21 @@ def _debug(msg):
             fh.write(msg + "\n")
     except OSError:
         pass
+
+
+def is_trusted():
+    """True if this process has macOS Accessibility permission (needed to
+    actually post clicks). Always True off macOS."""
+    if sys.platform != "darwin":
+        return True
+    try:
+        lib = ctypes.CDLL(
+            "/System/Library/Frameworks/ApplicationServices.framework/"
+            "ApplicationServices")
+        lib.AXIsProcessTrusted.restype = ctypes.c_bool
+        return bool(lib.AXIsProcessTrusted())
+    except Exception:
+        return True  # if we can't tell, don't nag
 
 
 # ---- toggle hotkey: the backtick ` key (top-left, above Tab) ----
@@ -170,6 +186,7 @@ class ClickThread(threading.Thread):
         self.clicks_per_action = clicks_per_action   # 1 = single, 2 = double
         self.max_actions = max_actions               # 0 = unlimited
         self._stop = threading.Event()
+        self.error = None                            # set if a click raises
 
     def stop(self):
         self._stop.set()
@@ -177,7 +194,11 @@ class ClickThread(threading.Thread):
     def run(self):
         count = 0
         while not self._stop.is_set():
-            mouse.click(self.button, self.clicks_per_action)
+            try:
+                mouse.click(self.button, self.clicks_per_action)
+            except Exception as e:               # surface, don't die silently
+                self.error = str(e)
+                return
             count += 1
             if self.max_actions and count >= self.max_actions:
                 break
@@ -218,10 +239,23 @@ class AutoClickerApp:
         tk.Label(outer, text="Autoclicker", font=self.f_title,
                  bg=BG, fg=TEXT).pack(anchor="w")
         tk.Label(outer, text="Clicks automatically at the speed you choose",
-                 font=self.f_sub, bg=BG, fg=MUTED).pack(anchor="w", pady=(0, 14))
+                 font=self.f_sub, bg=BG, fg=MUTED).pack(anchor="w", pady=(0, 8))
+
+        # ---- permission warning banner (shown only when not trusted) ----
+        self.perm_frame = tk.Frame(outer, bg="#fff4f4",
+                                   highlightbackground=RED, highlightthickness=1)
+        self.perm_lbl = tk.Label(
+            self.perm_frame, justify="left", wraplength=360, bg="#fff4f4",
+            fg="#b3261e", font=self.f_hint,
+            text=("⚠  No Accessibility permission — clicks won't actually "
+                  "land.\nSystem Settings ▸ Privacy & Security ▸ Accessibility "
+                  "▸ turn ON Autoclicker, then quit and reopen this app."))
+        self.perm_lbl.pack(padx=10, pady=8, anchor="w")
+        # packed/unpacked dynamically by _check_perm()
 
         # ---- interval card ----
         card1 = self._card(outer)
+        self._first_card = card1
         self._section(card1, "CLICK SPEED")
 
         row = tk.Frame(card1, bg=CARD)
@@ -311,10 +345,20 @@ class AutoClickerApp:
         self.status_lbl.pack()
 
         self._update_rate()
+        self._check_perm()
 
         # ---- global hotkey ----
         self.hotkey = HotkeyManager(root, self.toggle, TOGGLE_KEYCODE, TOGGLE_CHAR)
         root.protocol("WM_DELETE_WINDOW", self.on_close)
+
+    def _check_perm(self):
+        """Show/hide the Accessibility warning banner based on trust state."""
+        trusted = is_trusted()
+        if trusted and self.perm_frame.winfo_ismapped():
+            self.perm_frame.pack_forget()
+        elif not trusted and not self.perm_frame.winfo_ismapped():
+            self.perm_frame.pack(before=self._first_card, fill="x", pady=(0, 8))
+        self.root.after(1500, self._check_perm)
 
     # ---------- UI helpers ----------
     def _card(self, parent):
@@ -410,7 +454,13 @@ class AutoClickerApp:
             self.start()
 
     def _poll_thread(self):
-        if self.click_thread and not self.click_thread.is_alive():
+        if self.click_thread and self.click_thread.error:
+            err = self.click_thread.error
+            self.stop()
+            self.status.set("⚠ Click failed")
+            self.status_lbl.config(fg=RED)
+            messagebox.showerror("Click failed", err)
+        elif self.click_thread and not self.click_thread.is_alive():
             self.stop()
             self.status.set("● Done")
         elif self.click_thread:
