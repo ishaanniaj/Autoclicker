@@ -1,6 +1,7 @@
 # Autoclicker
 
-A simple cross-platform autoclicker with a small Tkinter GUI.
+A simple cross-platform autoclicker with a small Tkinter GUI. Clicks
+automatically at a rate you choose, toggled with a global **F6** hotkey.
 
 ## Features
 - Configurable click interval (hours / minutes / seconds / milliseconds)
@@ -9,13 +10,18 @@ A simple cross-platform autoclicker with a small Tkinter GUI.
 - Fixed repeat count or click-until-stopped
 - Global hotkey toggle (**F6**) to start/stop without focusing the window
 
-## Install
+## Run it (easiest — macOS)
+1. Open the `Autoclicker` folder in Finder.
+2. **Double-click `run.command`.**
+   - First time only: if macOS blocks it, **right-click → Open → Open**.
+3. The window opens. Set your speed, position the mouse, press **Start** or **F6**.
+
+The first double-click auto-installs everything into a local `.venv`;
+later runs launch instantly.
+
+## Run it (manual / other platforms)
 ```bash
 pip install -r requirements.txt
-```
-
-## Run
-```bash
 python autoclicker.py
 ```
 
@@ -28,7 +34,11 @@ python autoclicker.py
 
 The clicker acts wherever the cursor currently is.
 
-## macOS note
+## macOS permission note
 Grant **Accessibility** permission to whatever runs the script
 (System Settings → Privacy & Security → Accessibility), otherwise the
 clicks and the F6 hotkey will not fire.
+
+## Requirements
+- Python 3
+- [`pynput`](https://pypi.org/project/pynput/) (installed automatically by `run.command`, or via `requirements.txt`)
