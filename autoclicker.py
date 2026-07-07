@@ -13,6 +13,7 @@ Features
 Requires: pynput   ->   pip install pynput
 """
 
+import sys
 import threading
 import tkinter as tk
 import tkinter.font as tkfont
@@ -27,6 +28,7 @@ mouse = Controller()
 # ---- toggle hotkey: the backtick ` key (top-left, above Tab) ----
 TOGGLE_CHAR = "`"
 TOGGLE_LABEL = "`"
+TOGGLE_KEYCODE = 50   # macOS virtual key code for the ` / ~ key (kVK_ANSI_Grave)
 
 # ---- color palette (light, iOS-ish) ----
 BG = "#f2f2f7"
@@ -76,6 +78,83 @@ class SolidButton(tk.Label):
             self.configure(bg=self.color, fg="#ffffff", cursor="pointinghand")
         else:
             self.configure(bg=DISABLED_BG, fg=DISABLED_FG, cursor="arrow")
+
+
+class HotkeyManager:
+    """Global start/stop hotkey.
+
+    On macOS, pynput's keyboard listener queries the Text Input Source API
+    from a background thread, which macOS 26 kills with a dispatch-queue
+    assertion inside a bundled .app. So on macOS we install a *main-thread*
+    Quartz event tap that matches the raw key code (no input-source lookup).
+    Other platforms use pynput as usual.
+    """
+
+    def __init__(self, root, on_toggle, keycode, char):
+        self.root = root
+        self.on_toggle = on_toggle
+        self._tap = None
+        self._quartz = None
+        self._listener = None
+        if sys.platform == "darwin":
+            self._start_quartz(keycode)
+        else:
+            self._start_pynput(char)
+
+    def _fire(self):
+        self.root.after(0, self.on_toggle)
+
+    def _start_quartz(self, keycode):
+        try:
+            import Quartz
+        except ImportError:
+            return  # no Quartz -> rely on the on-screen buttons
+
+        def callback(proxy, etype, event, refcon):
+            try:
+                if etype == Quartz.kCGEventKeyDown:
+                    kc = Quartz.CGEventGetIntegerValueField(
+                        event, Quartz.kCGKeyboardEventKeycode)
+                    if kc == keycode:
+                        self._fire()
+            except Exception:
+                pass
+            return event
+
+        tap = Quartz.CGEventTapCreate(
+            Quartz.kCGSessionEventTap,
+            Quartz.kCGHeadInsertEventTap,
+            Quartz.kCGEventTapOptionListenOnly,
+            Quartz.CGEventMaskBit(Quartz.kCGEventKeyDown),
+            callback, None)
+        if not tap:
+            return  # Accessibility not granted yet -> buttons still work
+
+        source = Quartz.CFMachPortCreateRunLoopSource(None, tap, 0)
+        Quartz.CFRunLoopAddSource(
+            Quartz.CFRunLoopGetCurrent(), source, Quartz.kCFRunLoopCommonModes)
+        Quartz.CGEventTapEnable(tap, True)
+        self._tap = tap
+        self._quartz = Quartz
+
+    def _start_pynput(self, char):
+        def on_press(key):
+            try:
+                if key.char == char:
+                    self._fire()
+            except AttributeError:
+                pass
+        self._listener = keyboard.Listener(on_press=on_press)
+        self._listener.start()
+
+    def stop(self):
+        if self._listener is not None:
+            self._listener.stop()
+        if self._tap is not None and self._quartz is not None:
+            try:
+                self._quartz.CGEventTapEnable(self._tap, False)
+            except Exception:
+                pass
 
 
 class ClickThread(threading.Thread):
@@ -230,9 +309,8 @@ class AutoClickerApp:
 
         self._update_rate()
 
-        # ---- global hotkey listener ----
-        self.listener = keyboard.Listener(on_press=self.on_key)
-        self.listener.start()
+        # ---- global hotkey ----
+        self.hotkey = HotkeyManager(root, self.toggle, TOGGLE_KEYCODE, TOGGLE_CHAR)
         root.protocol("WM_DELETE_WINDOW", self.on_close)
 
     # ---------- UI helpers ----------
@@ -335,16 +413,9 @@ class AutoClickerApp:
         elif self.click_thread:
             self.root.after(100, self._poll_thread)
 
-    def on_key(self, key):
-        try:
-            if key.char == TOGGLE_CHAR:
-                self.root.after(0, self.toggle)
-        except AttributeError:
-            pass
-
     def on_close(self):
         self.stop()
-        self.listener.stop()
+        self.hotkey.stop()
         self.root.destroy()
 
 

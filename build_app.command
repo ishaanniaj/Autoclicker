@@ -30,15 +30,21 @@ if [ ! -d "$APP" ]; then
     echo "Build failed — no app produced."; read -r; exit 1
 fi
 
-# Clean extended-attribute cruft and ad-hoc sign so Gatekeeper is happy.
-xattr -cr "$APP"
-codesign --force --deep -s - "$APP"
-
+# Install first, then clean + sign the copy. /Applications is not an
+# iCloud-synced folder, so it won't keep re-acquiring the com.apple.FinderInfo
+# / provenance attributes that make codesign reject the bundle.
 echo "Installing to /Applications..."
-rm -rf /Applications/Autoclicker.app
-cp -R "$APP" /Applications/
-xattr -cr /Applications/Autoclicker.app
-codesign --force --deep -s - /Applications/Autoclicker.app
+DEST="/Applications/Autoclicker.app"
+rm -rf "$DEST"
+cp -R "$APP" "$DEST"
+
+find "$DEST" -name '.DS_Store' -delete 2>/dev/null
+xattr -cr "$DEST"
+xattr -d com.apple.FinderInfo "$DEST" 2>/dev/null
+codesign --force --deep -s - "$DEST"
+codesign --verify --deep --strict "$DEST" \
+    && echo "Signature verified." \
+    || echo "Warning: signature check reported an issue (app usually still runs)."
 
 echo ""
 echo "Done. Autoclicker.app is in your Applications folder."
