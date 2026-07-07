@@ -10,7 +10,16 @@ automatically at a rate you choose, toggled with the global **`** (backtick) hot
 - Fixed repeat count or click-until-stopped
 - Global hotkey toggle (**`** backtick) to start/stop without focusing the window
 
-## Run it (easiest — macOS)
+## Run it (easiest — macOS app)
+There's a standalone **`Autoclicker.app`** — no Terminal, no Python needed.
+
+- Build/install it by **double-clicking `build_app.command`** (see
+  [Build the .app](#build-the-app) below). It lands in your **Applications**
+  folder; launch it from Launchpad, Spotlight, or drag it to your Dock.
+- First launch only: macOS may warn it's from an unidentified developer —
+  **right-click the app → Open → Open**.
+
+## Run it (script — macOS)
 1. Open the `Autoclicker` folder in Finder.
 2. **Double-click `run.command`.**
    - First time only: if macOS blocks it, **right-click → Open → Open**.
@@ -18,6 +27,12 @@ automatically at a rate you choose, toggled with the global **`** (backtick) hot
 
 The first double-click auto-installs everything into a local `.venv`;
 later runs launch instantly.
+
+## Build the .app
+Double-click **`build_app.command`** (or run it from a terminal). It sets up
+the environment, bundles the app with [PyInstaller](https://pyinstaller.org),
+ad-hoc signs it, and copies it to `/Applications`. Re-run it any time you
+change the code. Build output (`build/`, `dist/`, `*.spec`) is gitignored.
 
 ## Run it (manual / other platforms)
 ```bash
