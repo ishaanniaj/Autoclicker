@@ -7,14 +7,15 @@ Features
   - Left, middle, or right mouse button
   - Single or double click
   - Fixed repeat count or click-until-stopped
-  - Global hotkey toggle (default F6) so you can start/stop without
-    focusing the window
+  - Global hotkey toggle (default backtick ` ) so you can start/stop
+    without focusing the window
 
 Requires: pynput   ->   pip install pynput
 """
 
 import threading
 import tkinter as tk
+import tkinter.font as tkfont
 from tkinter import ttk, messagebox
 
 from pynput.mouse import Button, Controller
@@ -23,8 +24,58 @@ from pynput import keyboard
 
 mouse = Controller()
 
-# ---- toggle hotkey (change here if F6 conflicts with something) ----
-TOGGLE_KEY = keyboard.Key.f6
+# ---- toggle hotkey: the backtick ` key (top-left, above Tab) ----
+TOGGLE_CHAR = "`"
+TOGGLE_LABEL = "`"
+
+# ---- color palette (light, iOS-ish) ----
+BG = "#f2f2f7"
+CARD = "#ffffff"
+BORDER = "#e3e3e8"
+TEXT = "#1d1d1f"
+MUTED = "#8a8a8e"
+ACCENT = "#0a84ff"
+GREEN = "#34c759"
+GREEN_H = "#2eb350"
+RED = "#ff3b30"
+RED_H = "#e0352b"
+DISABLED_BG = "#d1d1d6"
+DISABLED_FG = "#f2f2f7"
+
+
+class SolidButton(tk.Label):
+    """A flat, colored button (Tk's native buttons ignore color on macOS)."""
+
+    def __init__(self, master, text, color, hover, command, font):
+        super().__init__(master, text=text, bg=color, fg="#ffffff",
+                         font=font, padx=30, pady=11)
+        self.color = color
+        self.hover = hover
+        self.command = command
+        self.enabled = True
+        self.configure(cursor="pointinghand")
+        self.bind("<Enter>", self._enter)
+        self.bind("<Leave>", self._leave)
+        self.bind("<Button-1>", self._click)
+
+    def _enter(self, _):
+        if self.enabled:
+            self.configure(bg=self.hover)
+
+    def _leave(self, _):
+        if self.enabled:
+            self.configure(bg=self.color)
+
+    def _click(self, _):
+        if self.enabled and self.command:
+            self.command()
+
+    def set_enabled(self, on):
+        self.enabled = on
+        if on:
+            self.configure(bg=self.color, fg="#ffffff", cursor="pointinghand")
+        else:
+            self.configure(bg=DISABLED_BG, fg=DISABLED_FG, cursor="arrow")
 
 
 class ClickThread(threading.Thread):
@@ -32,10 +83,10 @@ class ClickThread(threading.Thread):
 
     def __init__(self, interval, button, clicks_per_action, max_actions):
         super().__init__(daemon=True)
-        self.interval = interval                 # seconds between actions
-        self.button = button                     # pynput Button
-        self.clicks_per_action = clicks_per_action  # 1 = single, 2 = double
-        self.max_actions = max_actions           # 0 = unlimited
+        self.interval = interval                     # seconds between actions
+        self.button = button                         # pynput Button
+        self.clicks_per_action = clicks_per_action   # 1 = single, 2 = double
+        self.max_actions = max_actions               # 0 = unlimited
         self._stop = threading.Event()
 
     def stop(self):
@@ -48,7 +99,6 @@ class ClickThread(threading.Thread):
             count += 1
             if self.max_actions and count >= self.max_actions:
                 break
-            # sleep in small slices so Stop is responsive
             self._stop.wait(self.interval)
 
 
@@ -57,86 +107,170 @@ class AutoClickerApp:
         self.root = root
         self.click_thread = None
         root.title("Autoclicker")
+        root.configure(bg=BG)
         root.resizable(False, False)
 
-        pad = {"padx": 6, "pady": 4}
+        # ---- fonts derived from the system default (robust across machines) ----
+        base = tkfont.nametofont("TkDefaultFont").actual("family")
+        self.f_title = tkfont.Font(family=base, size=22, weight="bold")
+        self.f_sub = tkfont.Font(family=base, size=12)
+        self.f_section = tkfont.Font(family=base, size=11, weight="bold")
+        self.f_body = tkfont.Font(family=base, size=13)
+        self.f_entry = tkfont.Font(family=base, size=15)
+        self.f_unit = tkfont.Font(family=base, size=12)
+        self.f_btn = tkfont.Font(family=base, size=15, weight="bold")
+        self.f_hint = tkfont.Font(family=base, size=11)
 
-        # ---- Interval ----
-        interval_frame = ttk.LabelFrame(root, text="Click interval")
-        interval_frame.grid(row=0, column=0, sticky="ew", padx=8, pady=6)
+        # combobox styling
+        style = ttk.Style()
+        try:
+            style.theme_use("clam")
+        except tk.TclError:
+            pass
+        style.configure("Big.TCombobox", padding=4, arrowsize=14)
+
+        outer = tk.Frame(root, bg=BG, padx=20, pady=18)
+        outer.pack(fill="both", expand=True)
+
+        # ---- header ----
+        tk.Label(outer, text="Autoclicker", font=self.f_title,
+                 bg=BG, fg=TEXT).pack(anchor="w")
+        tk.Label(outer, text="Clicks automatically at the speed you choose",
+                 font=self.f_sub, bg=BG, fg=MUTED).pack(anchor="w", pady=(0, 14))
+
+        # ---- interval card ----
+        card1 = self._card(outer)
+        self._section(card1, "CLICK SPEED")
+
+        row = tk.Frame(card1, bg=CARD)
+        row.pack(anchor="w", pady=(8, 2))
 
         self.hours = tk.StringVar(value="0")
         self.mins = tk.StringVar(value="0")
         self.secs = tk.StringVar(value="0")
         self.millis = tk.StringVar(value="100")
 
-        for col, (label, var) in enumerate(
+        for i, (label, var) in enumerate(
             [("hrs", self.hours), ("min", self.mins),
              ("sec", self.secs), ("ms", self.millis)]
         ):
-            ttk.Entry(interval_frame, width=5, textvariable=var).grid(
-                row=0, column=col * 2, **pad)
-            ttk.Label(interval_frame, text=label).grid(
-                row=0, column=col * 2 + 1, **pad)
+            self._entry(row, var).grid(row=0, column=i * 2, padx=(0, 4))
+            tk.Label(row, text=label, font=self.f_unit, bg=CARD,
+                     fg=MUTED).grid(row=0, column=i * 2 + 1, padx=(0, 14))
+            var.trace_add("write", self._update_rate)
 
-        # ---- Options ----
-        opt_frame = ttk.LabelFrame(root, text="Options")
-        opt_frame.grid(row=1, column=0, sticky="ew", padx=8, pady=6)
+        self.rate_lbl = tk.Label(card1, text="", font=self.f_body,
+                                 bg=CARD, fg=ACCENT)
+        self.rate_lbl.pack(anchor="w", pady=(6, 0))
 
-        ttk.Label(opt_frame, text="Button").grid(row=0, column=0, **pad)
+        # ---- options card ----
+        card2 = self._card(outer)
+        self._section(card2, "OPTIONS")
+
+        orow = tk.Frame(card2, bg=CARD)
+        orow.pack(anchor="w", pady=(8, 0))
+
+        tk.Label(orow, text="Button", font=self.f_body, bg=CARD,
+                 fg=TEXT).grid(row=0, column=0, sticky="w")
         self.button_var = tk.StringVar(value="left")
-        ttk.Combobox(
-            opt_frame, textvariable=self.button_var, width=8, state="readonly",
-            values=["left", "middle", "right"],
-        ).grid(row=0, column=1, **pad)
+        ttk.Combobox(orow, textvariable=self.button_var, width=8,
+                     state="readonly", style="Big.TCombobox", font=self.f_body,
+                     values=["left", "middle", "right"]).grid(
+            row=0, column=1, padx=(8, 22))
 
-        ttk.Label(opt_frame, text="Type").grid(row=0, column=2, **pad)
+        tk.Label(orow, text="Type", font=self.f_body, bg=CARD,
+                 fg=TEXT).grid(row=0, column=2, sticky="w")
         self.type_var = tk.StringVar(value="single")
-        ttk.Combobox(
-            opt_frame, textvariable=self.type_var, width=8, state="readonly",
-            values=["single", "double"],
-        ).grid(row=0, column=3, **pad)
+        ttk.Combobox(orow, textvariable=self.type_var, width=8,
+                     state="readonly", style="Big.TCombobox", font=self.f_body,
+                     values=["single", "double"]).grid(row=0, column=3, padx=(8, 0))
 
-        # ---- Repeat ----
-        rep_frame = ttk.LabelFrame(root, text="Repeat")
-        rep_frame.grid(row=2, column=0, sticky="ew", padx=8, pady=6)
+        # ---- repeat card ----
+        card3 = self._card(outer)
+        self._section(card3, "REPEAT")
 
         self.repeat_mode = tk.StringVar(value="forever")
-        ttk.Radiobutton(
-            rep_frame, text="Until stopped", variable=self.repeat_mode,
-            value="forever",
-        ).grid(row=0, column=0, sticky="w", **pad)
-        ttk.Radiobutton(
-            rep_frame, text="Repeat", variable=self.repeat_mode, value="count",
-        ).grid(row=1, column=0, sticky="w", **pad)
+        tk.Radiobutton(
+            card3, text="Until stopped", variable=self.repeat_mode,
+            value="forever", font=self.f_body, bg=CARD, fg=TEXT,
+            activebackground=CARD, selectcolor=CARD, highlightthickness=0,
+        ).pack(anchor="w", pady=(8, 0))
+
+        rrow = tk.Frame(card3, bg=CARD)
+        rrow.pack(anchor="w", pady=(2, 0))
+        tk.Radiobutton(
+            rrow, text="Repeat", variable=self.repeat_mode, value="count",
+            font=self.f_body, bg=CARD, fg=TEXT, activebackground=CARD,
+            selectcolor=CARD, highlightthickness=0,
+        ).grid(row=0, column=0)
         self.repeat_count = tk.StringVar(value="10")
-        ttk.Entry(rep_frame, width=6, textvariable=self.repeat_count).grid(
-            row=1, column=1, **pad)
-        ttk.Label(rep_frame, text="times").grid(row=1, column=2, sticky="w")
+        self._entry(rrow, self.repeat_count, width=5).grid(
+            row=0, column=1, padx=6)
+        tk.Label(rrow, text="times", font=self.f_body, bg=CARD,
+                 fg=TEXT).grid(row=0, column=2)
 
-        # ---- Controls ----
-        ctrl_frame = ttk.Frame(root)
-        ctrl_frame.grid(row=3, column=0, sticky="ew", padx=8, pady=6)
+        # ---- controls ----
+        ctrl = tk.Frame(outer, bg=BG)
+        ctrl.pack(pady=(16, 4))
+        self.start_btn = SolidButton(ctrl, "▶  Start", GREEN, GREEN_H,
+                                     self.start, self.f_btn)
+        self.start_btn.grid(row=0, column=0, padx=6)
+        self.stop_btn = SolidButton(ctrl, "■  Stop", RED, RED_H,
+                                    self.stop, self.f_btn)
+        self.stop_btn.grid(row=0, column=1, padx=6)
+        self.stop_btn.set_enabled(False)
 
-        self.start_btn = ttk.Button(
-            ctrl_frame, text="Start (F6)", command=self.start)
-        self.start_btn.grid(row=0, column=0, padx=4)
-        self.stop_btn = ttk.Button(
-            ctrl_frame, text="Stop (F6)", command=self.stop, state="disabled")
-        self.stop_btn.grid(row=0, column=1, padx=4)
+        tk.Label(outer, text=f"Shortcut:  press  {TOGGLE_LABEL}  to start / stop",
+                 font=self.f_hint, bg=BG, fg=MUTED).pack(pady=(8, 2))
 
-        self.status = tk.StringVar(value="Idle — press F6 or Start")
-        ttk.Label(root, textvariable=self.status, foreground="#666").grid(
-            row=4, column=0, pady=(0, 8))
+        self.status = tk.StringVar(value="● Idle")
+        self.status_lbl = tk.Label(outer, textvariable=self.status,
+                                   font=self.f_body, bg=BG, fg=MUTED)
+        self.status_lbl.pack()
 
-        # ---- Global hotkey listener ----
+        self._update_rate()
+
+        # ---- global hotkey listener ----
         self.listener = keyboard.Listener(on_press=self.on_key)
         self.listener.start()
-
         root.protocol("WM_DELETE_WINDOW", self.on_close)
 
-    # ---------- helpers ----------
-    def compute_interval(self):
+    # ---------- UI helpers ----------
+    def _card(self, parent):
+        card = tk.Frame(parent, bg=CARD, highlightbackground=BORDER,
+                        highlightthickness=1, padx=16, pady=12)
+        card.pack(fill="x", pady=6)
+        return card
+
+    def _section(self, parent, text):
+        tk.Label(parent, text=text, font=self.f_section, bg=CARD,
+                 fg=MUTED).pack(anchor="w")
+
+    def _entry(self, parent, var, width=6):
+        return tk.Entry(parent, textvariable=var, width=width,
+                        font=self.f_entry, justify="center", relief="flat",
+                        bg="#f7f7fa", fg=TEXT, highlightthickness=1,
+                        highlightbackground=BORDER, highlightcolor=ACCENT,
+                        insertbackground=TEXT)
+
+    def _update_rate(self, *_):
+        try:
+            seconds = self._compute_interval()
+        except ValueError:
+            self.rate_lbl.config(text="⚠ enter a speed above zero")
+            return
+        if seconds < 1:
+            self.rate_lbl.config(text=f"≈ {1 / seconds:.0f} clicks per second")
+        elif seconds < 60:
+            unit = "second" if seconds == 1 else "seconds"
+            self.rate_lbl.config(text=f"1 click every {seconds:g} {unit}")
+        else:
+            mins = seconds / 60
+            unit = "minute" if mins == 1 else "minutes"
+            self.rate_lbl.config(text=f"1 click every {mins:g} {unit}")
+
+    # ---------- logic ----------
+    def _compute_interval(self):
         try:
             seconds = (
                 int(self.hours.get() or 0) * 3600
@@ -150,19 +284,15 @@ class AutoClickerApp:
             raise ValueError("Interval must be greater than zero.")
         return seconds
 
-    def selected_button(self):
-        return {
-            "left": Button.left,
-            "middle": Button.middle,
-            "right": Button.right,
-        }[self.button_var.get()]
+    def _selected_button(self):
+        return {"left": Button.left, "middle": Button.middle,
+                "right": Button.right}[self.button_var.get()]
 
-    # ---------- actions ----------
     def start(self):
         if self.click_thread and self.click_thread.is_alive():
             return
         try:
-            interval = self.compute_interval()
+            interval = self._compute_interval()
             max_actions = 0
             if self.repeat_mode.get() == "count":
                 max_actions = int(self.repeat_count.get() or 0)
@@ -174,21 +304,23 @@ class AutoClickerApp:
 
         clicks = 2 if self.type_var.get() == "double" else 1
         self.click_thread = ClickThread(
-            interval, self.selected_button(), clicks, max_actions)
+            interval, self._selected_button(), clicks, max_actions)
         self.click_thread.start()
 
-        self.start_btn.config(state="disabled")
-        self.stop_btn.config(state="normal")
-        self.status.set("Clicking… press F6 or Stop to halt")
+        self.start_btn.set_enabled(False)
+        self.stop_btn.set_enabled(True)
+        self.status.set("● Clicking…")
+        self.status_lbl.config(fg=GREEN)
         self._poll_thread()
 
     def stop(self):
         if self.click_thread:
             self.click_thread.stop()
             self.click_thread = None
-        self.start_btn.config(state="normal")
-        self.stop_btn.config(state="disabled")
-        self.status.set("Stopped")
+        self.start_btn.set_enabled(True)
+        self.stop_btn.set_enabled(False)
+        self.status.set("● Stopped")
+        self.status_lbl.config(fg=MUTED)
 
     def toggle(self):
         if self.click_thread and self.click_thread.is_alive():
@@ -197,17 +329,18 @@ class AutoClickerApp:
             self.start()
 
     def _poll_thread(self):
-        """Reset buttons automatically when a finite run finishes."""
         if self.click_thread and not self.click_thread.is_alive():
             self.stop()
-            self.status.set("Done")
+            self.status.set("● Done")
         elif self.click_thread:
             self.root.after(100, self._poll_thread)
 
     def on_key(self, key):
-        if key == TOGGLE_KEY:
-            # marshal back onto the Tk thread
-            self.root.after(0, self.toggle)
+        try:
+            if key.char == TOGGLE_CHAR:
+                self.root.after(0, self.toggle)
+        except AttributeError:
+            pass
 
     def on_close(self):
         self.stop()
