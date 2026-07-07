@@ -9,3 +9,5 @@ dist/
 *.spec
 
 .DS_Store
+
+icon.iconset/
