@@ -13,6 +13,7 @@ Features
 Requires: pynput   ->   pip install pynput
 """
 
+import os
 import sys
 import threading
 import tkinter as tk
@@ -24,6 +25,19 @@ from pynput import keyboard
 
 
 mouse = Controller()
+
+
+def _debug(msg):
+    """Append a line to the file named by AUTOCLICKER_DEBUG, if set."""
+    path = os.environ.get("AUTOCLICKER_DEBUG")
+    if not path:
+        return
+    try:
+        with open(path, "a") as fh:
+            fh.write(msg + "\n")
+    except OSError:
+        pass
+
 
 # ---- toggle hotkey: the backtick ` key (top-left, above Tab) ----
 TOGGLE_CHAR = "`"
@@ -83,78 +97,67 @@ class SolidButton(tk.Label):
 class HotkeyManager:
     """Global start/stop hotkey.
 
-    On macOS, pynput's keyboard listener queries the Text Input Source API
-    from a background thread, which macOS 26 kills with a dispatch-queue
-    assertion inside a bundled .app. So on macOS we install a *main-thread*
-    Quartz event tap that matches the raw key code (no input-source lookup).
-    Other platforms use pynput as usual.
+    macOS is fussy about global keyboard hooks inside a bundled .app:
+      - pynput's listener queries the Text Input Source API off the main
+        thread -> macOS 26 aborts with a dispatch-queue assertion.
+      - A Quartz event-tap callback re-entering Tkinter corrupts the Python
+        interpreter state -> fatal error.
+    Both crash the app. The robust approach is to touch nothing off the main
+    thread: poll the raw key state from Tk's own event loop with `after()`,
+    and toggle on a fresh key-down edge. Other platforms use pynput.
     """
+
+    POLL_MS = 45
 
     def __init__(self, root, on_toggle, keycode, char):
         self.root = root
         self.on_toggle = on_toggle
-        self._tap = None
+        self.keycode = keycode
+        self._prev_down = False
+        self._active = True
         self._quartz = None
         self._listener = None
         if sys.platform == "darwin":
-            self._start_quartz(keycode)
+            try:
+                import Quartz
+                self._quartz = Quartz
+                self._poll()
+            except ImportError:
+                self._active = False  # fall back to the on-screen buttons
         else:
             self._start_pynput(char)
 
-    def _fire(self):
-        self.root.after(0, self.on_toggle)
-
-    def _start_quartz(self, keycode):
+    def _poll(self):
+        if not self._active:
+            return
+        q = self._quartz
         try:
-            import Quartz
-        except ImportError:
-            return  # no Quartz -> rely on the on-screen buttons
-
-        def callback(proxy, etype, event, refcon):
-            try:
-                if etype == Quartz.kCGEventKeyDown:
-                    kc = Quartz.CGEventGetIntegerValueField(
-                        event, Quartz.kCGKeyboardEventKeycode)
-                    if kc == keycode:
-                        self._fire()
-            except Exception:
-                pass
-            return event
-
-        tap = Quartz.CGEventTapCreate(
-            Quartz.kCGSessionEventTap,
-            Quartz.kCGHeadInsertEventTap,
-            Quartz.kCGEventTapOptionListenOnly,
-            Quartz.CGEventMaskBit(Quartz.kCGEventKeyDown),
-            callback, None)
-        if not tap:
-            return  # Accessibility not granted yet -> buttons still work
-
-        source = Quartz.CFMachPortCreateRunLoopSource(None, tap, 0)
-        Quartz.CFRunLoopAddSource(
-            Quartz.CFRunLoopGetCurrent(), source, Quartz.kCFRunLoopCommonModes)
-        Quartz.CGEventTapEnable(tap, True)
-        self._tap = tap
-        self._quartz = Quartz
+            # Combined session state reflects both real hardware keys and
+            # posted events (HID-only state misses some cases).
+            down = bool(q.CGEventSourceKeyState(
+                q.kCGEventSourceStateCombinedSessionState, self.keycode))
+        except Exception:
+            down = False
+        if down and not self._prev_down:      # rising edge = one press
+            _debug("hotkey edge -> toggle")
+            self.on_toggle()
+        self._prev_down = down
+        self.root.after(self.POLL_MS, self._poll)
 
     def _start_pynput(self, char):
         def on_press(key):
             try:
                 if key.char == char:
-                    self._fire()
+                    self.root.after(0, self.on_toggle)
             except AttributeError:
                 pass
         self._listener = keyboard.Listener(on_press=on_press)
         self._listener.start()
 
     def stop(self):
+        self._active = False
         if self._listener is not None:
             self._listener.stop()
-        if self._tap is not None and self._quartz is not None:
-            try:
-                self._quartz.CGEventTapEnable(self._tap, False)
-            except Exception:
-                pass
 
 
 class ClickThread(threading.Thread):
