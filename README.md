@@ -20,50 +20,50 @@ until that permission is granted.
 - Fixed repeat count or click-until-stopped
 - Global hotkey toggle (**`** backtick) to start/stop without focusing the window
 
-## Run it (easiest — macOS app)
-There's a standalone **`Autoclicker.app`** — no Terminal, no Python needed.
+## How to run it
+Once installed (see **Download** above), open **Autoclicker** from Launchpad,
+Spotlight, or your Applications folder — then:
 
-- Build/install it by **double-clicking `build_app.command`** (see
-  [Build the .app](#build-the-app) below). It lands in your **Applications**
-  folder; launch it from Launchpad, Spotlight, or drag it to your Dock.
-- First launch only: macOS may warn it's from an unidentified developer —
-  **right-click the app → Open → Open**.
+1. **Grant permission (first time only).** The app shows a red banner until you
+   enable it under **System Settings → Privacy & Security → Accessibility**
+   (turn **Autoclicker** ON), then quit and reopen. Without this, clicks and the
+   hotkey won't fire.
+2. **Set the click speed** in the *Click interval* boxes — hours / minutes /
+   seconds / milliseconds (100 ms ≈ 10 clicks per second).
+3. **Choose** the mouse **button** (left / middle / right) and **type**
+   (single / double).
+4. Pick **Until stopped** or a fixed **Repeat** count.
+5. Move your cursor to where you want to click, then press **Start** — or tap
+   the **`** (backtick) key to start/stop from any app.
+6. Press **`** again (or **Stop**) to halt.
 
-## Run it (script — macOS)
-1. Open the `Autoclicker` folder in Finder.
-2. **Double-click `run.command`.**
-   - First time only: if macOS blocks it, **right-click → Open → Open**.
-3. The window opens. Set your speed, position the mouse, press **Start** or the **`** key.
+The clicker clicks wherever the cursor currently is. Keep the app open while
+using it (you can minimize it); quitting it stops the clicking.
 
-The first double-click auto-installs everything into a local `.venv`;
-later runs launch instantly.
+## Run from source (developers)
+Prefer to run the Python directly instead of the app?
 
-## Build the .app
-Double-click **`build_app.command`** (or run it from a terminal). It sets up
-the environment, bundles the app with [PyInstaller](https://pyinstaller.org),
-ad-hoc signs it, and copies it to `/Applications`. Re-run it any time you
-change the code. Build output (`build/`, `dist/`, `*.spec`) is gitignored.
+- **Easiest — double-click `run.command`.** It creates a local virtualenv,
+  installs dependencies, and launches the GUI. First time: if macOS blocks it,
+  right-click → **Open** → **Open**.
+- **Manual:**
+  ```bash
+  pip install -r requirements.txt
+  python3 autoclicker.py
+  ```
+  On macOS use a Homebrew Python — the system Python's Tk toolkit is broken and
+  crashes the GUI.
 
-## Run it (manual / other platforms)
-```bash
-pip install -r requirements.txt
-python autoclicker.py
-```
+## Build the app & installer (developers)
+- **`build_app.command`** — bundles a standalone `Autoclicker.app` with
+  [PyInstaller](https://pyinstaller.org), ad-hoc signs it, and installs it to
+  `/Applications`.
+- **`build_dmg.command`** — packages the installed app into a
+  drag-to-Applications `Autoclicker.dmg`.
 
-## Usage
-1. Set the **click interval** (default 100 ms = 10 clicks/sec).
-2. Choose the **button** (left/middle/right) and **type** (single/double).
-3. Pick **Until stopped** or a fixed **Repeat** count.
-4. Position your cursor where you want to click, then press **Start** or the **`** key.
-5. Press **`** again (or **Stop**) to halt.
-
-The clicker acts wherever the cursor currently is.
-
-## macOS permission note
-Grant **Accessibility** permission to whatever runs the script
-(System Settings → Privacy & Security → Accessibility), otherwise the
-clicks and the backtick hotkey will not fire.
+Build output (`build/`, `dist/`, `*.spec`, `Autoclicker.dmg`) is gitignored.
 
 ## Requirements
-- Python 3
-- [`pynput`](https://pypi.org/project/pynput/) (installed automatically by `run.command`, or via `requirements.txt`)
+- **Prebuilt app:** macOS on Apple Silicon (M1–M4), macOS 11+.
+- **From source:** Python 3 and [`pynput`](https://pypi.org/project/pynput/)
+  (installed automatically by `run.command`, or via `requirements.txt`).
