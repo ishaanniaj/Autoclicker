@@ -209,7 +209,7 @@ class AutoClickerApp:
     def __init__(self, root):
         self.root = root
         self.click_thread = None
-        root.title("Autoclicker")
+        root.title("AutoClicker")
         root.configure(bg=BG)
         root.resizable(False, False)
 
@@ -236,7 +236,7 @@ class AutoClickerApp:
         outer.pack(fill="both", expand=True)
 
         # ---- header ----
-        tk.Label(outer, text="Autoclicker", font=self.f_title,
+        tk.Label(outer, text="AutoClicker", font=self.f_title,
                  bg=BG, fg=TEXT).pack(anchor="w")
         tk.Label(outer, text="Clicks automatically at the speed you choose",
                  font=self.f_sub, bg=BG, fg=MUTED).pack(anchor="w", pady=(0, 8))
@@ -249,7 +249,7 @@ class AutoClickerApp:
             fg="#b3261e", font=self.f_hint,
             text=("⚠  No Accessibility permission — clicks won't actually "
                   "land.\nSystem Settings ▸ Privacy & Security ▸ Accessibility "
-                  "▸ turn ON Autoclicker, then quit and reopen this app."))
+                  "▸ turn ON AutoClicker, then quit and reopen this app."))
         self.perm_lbl.pack(padx=10, pady=8, anchor="w")
         # packed/unpacked dynamically by _check_perm()
 

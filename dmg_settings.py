@@ -1,7 +1,7 @@
 import os.path
 
 # Source app to package (installed copy is clean + signed)
-application = "/Applications/Autoclicker.app"
+application = "/Applications/AutoClicker.app"
 appname = os.path.basename(application)
 
 format = "UDZO"                       # compressed, read-only

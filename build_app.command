@@ -1,5 +1,5 @@
 #!/bin/bash
-# Double-click to (re)build Autoclicker.app and install it to /Applications.
+# Double-click to (re)build AutoClicker.app and install it to /Applications.
 # Uses the local .venv (set up by run.command). Safe to run repeatedly.
 
 cd "$(dirname "$0")" || exit 1
@@ -39,12 +39,12 @@ fi
 ICON_ARG=""
 [ -f icon.icns ] && ICON_ARG="--icon icon.icns"
 
-echo "Building Autoclicker.app..."
-./.venv/bin/pyinstaller --windowed --name Autoclicker $ICON_ARG \
+echo "Building AutoClicker.app..."
+./.venv/bin/pyinstaller --windowed --name AutoClicker $ICON_ARG \
     --osx-bundle-identifier com.ishaanniaj.autoclicker \
     --noconfirm --clean autoclicker.py
 
-APP="dist/Autoclicker.app"
+APP="dist/AutoClicker.app"
 if [ ! -d "$APP" ]; then
     echo "Build failed — no app produced."; read -r; exit 1
 fi
@@ -53,7 +53,7 @@ fi
 # iCloud-synced folder, so it won't keep re-acquiring the com.apple.FinderInfo
 # / provenance attributes that make codesign reject the bundle.
 echo "Installing to /Applications..."
-DEST="/Applications/Autoclicker.app"
+DEST="/Applications/AutoClicker.app"
 rm -rf "$DEST"
 cp -R "$APP" "$DEST"
 
@@ -66,5 +66,5 @@ codesign --verify --deep --strict "$DEST" \
     || echo "Warning: signature check reported an issue (app usually still runs)."
 
 echo ""
-echo "Done. Autoclicker.app is in your Applications folder."
+echo "Done. AutoClicker.app is in your Applications folder."
 read -r -p "Press Return to close."

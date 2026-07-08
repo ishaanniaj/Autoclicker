@@ -35,7 +35,7 @@ def center_text(y, text, size, fill, bold=False):
 
 
 # title + hint (kept clear of the icon row at y~180)
-center_text(46, "Install Autoclicker", 30, (28, 34, 48))
+center_text(46, "Install AutoClicker", 30, (28, 34, 48))
 center_text(342, "Drag the app onto the Applications folder", 16, (120, 128, 140))
 
 # big arrow from the app (left, x~160) toward Applications (right, x~480)

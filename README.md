@@ -1,11 +1,11 @@
-# Autoclicker
+# AutoClicker
 
-A simple cross-platform autoclicker with a small Tkinter GUI. Clicks
+A simple cross-platform auto clicker with a small Tkinter GUI. Clicks
 automatically at a rate you choose, toggled with the global **`** (backtick) hotkey.
 
 ## Download (macOS, Apple Silicon)
-**[⬇︎ Download Autoclicker.dmg](https://github.com/ishaanniaj/Autoclicker/releases/latest/download/Autoclicker.dmg)** —
-this link downloads the app directly. Open the `.dmg` and drag **Autoclicker**
+**[⬇︎ Download AutoClicker.dmg](https://github.com/ishaanniaj/Autoclicker/releases/latest/download/AutoClicker.dmg)** —
+this link downloads the app directly. Open the `.dmg` and drag **AutoClicker**
 onto the **Applications** folder.
 
 First launch: right-click the app → **Open** → **Open** (it isn't signed by a
@@ -59,9 +59,9 @@ Prefer to run the Python directly instead of the app?
   [PyInstaller](https://pyinstaller.org), ad-hoc signs it, and installs it to
   `/Applications`.
 - **`build_dmg.command`** — packages the installed app into a
-  drag-to-Applications `Autoclicker.dmg`.
+  drag-to-Applications `AutoClicker.dmg`.
 
-Build output (`build/`, `dist/`, `*.spec`, `Autoclicker.dmg`) is gitignored.
+Build output (`build/`, `dist/`, `*.spec`, `AutoClicker.dmg`) is gitignored.
 
 ## Requirements
 - **Prebuilt app:** macOS on Apple Silicon (M1–M4), macOS 11+.
