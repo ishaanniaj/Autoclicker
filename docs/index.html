@@ -80,25 +80,29 @@
   .nav .ghost{color:var(--body);font-weight:600;font-size:.95rem;}
 
   /* hero */
-  .hero{text-align:center;padding:58px 0 8px;
+  .hero{text-align:center;padding:56px 0 4px;
     background:radial-gradient(900px 380px at 50% -60px,#eef3ff 0,#fff 70%);}
   .hero img.logo{width:76px;height:76px;border-radius:18px;box-shadow:0 10px 26px rgba(80,110,220,.28);}
   .hero h1{font-size:2.6rem;margin:18px 0 8px;letter-spacing:-.02em;}
-  .hero p.lead{font-size:1.18rem;color:var(--body);margin:0 auto 24px;max-width:34ch;}
-  .req{color:var(--muted);font-size:.86rem;margin-top:14px;}
-  .sub-link{display:block;margin-top:12px;font-size:.95rem;}
+  .hero p.lead{font-size:1.18rem;color:var(--body);margin:0 auto 22px;max-width:34ch;}
+  .req{color:var(--muted);font-size:.86rem;margin-top:12px;}
 
-  .shot{text-align:center;padding:20px 0 8px;}
-  .shot img{width:100%;max-width:430px;height:auto;}
+  /* showcase: screenshot beside feature tiles */
+  .wrap-wide{max-width:900px;margin:0 auto;padding:0 24px;}
+  .showcase{padding:10px 0 30px;}
+  .show-grid{display:grid;grid-template-columns:minmax(0,360px) 1fr;gap:30px;align-items:center;}
+  .show-img{text-align:center;}
+  .show-img img{width:100%;max-width:360px;height:auto;}
+  .feat{display:flex;gap:14px;align-items:flex-start;text-align:left;
+    padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:#fff;margin-bottom:12px;}
+  .feat:last-child{margin-bottom:0;}
+  .feat .ic{font-size:1.5rem;line-height:1;flex:0 0 auto;}
+  .feat h3{font-size:1.05rem;margin:0 0 3px;}
+  .feat p{margin:0;font-size:.93rem;color:var(--body);}
 
   /* content sections */
   section{padding:40px 0;}
   h2{font-size:1.55rem;text-align:center;margin:0 0 22px;}
-  .feats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
-  .feat{text-align:center;padding:20px 14px;border:1px solid var(--line);border-radius:14px;background:#fff;}
-  .feat .ic{font-size:1.5rem;}
-  .feat h3{font-size:1rem;margin:8px 0 4px;}
-  .feat p{margin:0;font-size:.9rem;color:var(--body);}
 
   .steps{counter-reset:s;border:1px solid var(--line);border-radius:14px;overflow:hidden;}
   .step{display:flex;gap:14px;padding:16px 18px;border-bottom:1px solid var(--line);align-items:flex-start;}
@@ -120,10 +124,11 @@
   footer{text-align:center;color:var(--muted);font-size:.85rem;padding:30px 24px;border-top:1px solid var(--line);margin-top:16px;}
   footer a{color:var(--body);}
 
-  @media(max-width:640px){
+  @media(max-width:720px){
     .hero{padding:40px 0 4px;}
     .hero h1{font-size:2.1rem;}
-    .feats{grid-template-columns:1fr;}
+    .show-grid{grid-template-columns:1fr;gap:22px;}
+    .show-img img{max-width:320px;}
   }
 </style>
 </head>
@@ -147,16 +152,17 @@
   </div>
 </section>
 
-<div class="shot wrap">
-  <img src="app-window.png" width="430" alt="The Autoclicker control window on macOS, showing click-speed fields, mouse-button options, and a Start button">
-</div>
-
-<section>
-  <div class="wrap">
-    <div class="feats">
-      <div class="feat"><div class="ic">⏱️</div><h3>Any speed</h3><p>From many clicks per second to one every few minutes.</p></div>
-      <div class="feat"><div class="ic">🖱️</div><h3>Any button</h3><p>Left, middle, or right — single or double click.</p></div>
-      <div class="feat"><div class="ic">⌨️</div><h3>Hotkey</h3><p>Tap <code>`</code> to start or stop from any app.</p></div>
+<section class="showcase">
+  <div class="wrap-wide">
+    <div class="show-grid">
+      <div class="show-img">
+        <img src="app-window.png" width="360" alt="The Autoclicker control window on macOS, showing click-speed fields, mouse-button options, and a Start button">
+      </div>
+      <div class="show-feats">
+        <div class="feat"><div class="ic">⏱️</div><div><h3>Any speed</h3><p>From many clicks per second to one every few minutes.</p></div></div>
+        <div class="feat"><div class="ic">🖱️</div><div><h3>Any button</h3><p>Left, middle, or right — single or double click.</p></div></div>
+        <div class="feat"><div class="ic">⌨️</div><div><h3>Hotkey</h3><p>Tap the <strong>backtick</strong> key <code>`</code> — just above Tab — to start or stop.</p></div></div>
+      </div>
     </div>
   </div>
 </section>
