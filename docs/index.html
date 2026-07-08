@@ -55,214 +55,134 @@
 
 <style>
   :root{
-    --blue:#4f9dff; --indigo:#6a5cff; --ink:#141a26; --body:#41495a;
-    --muted:#79808f; --line:#e8eaf1; --soft:#f6f8fc; --card:#fff;
-    --grad:linear-gradient(135deg,#4f9dff,#6a5cff);
+    --blue:#4f9dff; --indigo:#6a5cff; --ink:#141a26; --body:#454d5e; --muted:#7b8290;
+    --line:#e9ebf1; --soft:#f7f8fb; --grad:linear-gradient(135deg,#4f9dff,#6a5cff);
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
-  body{margin:0;color:var(--body);background:#fff;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    line-height:1.65;-webkit-font-smoothing:antialiased;}
-  h1,h2,h3{color:var(--ink);line-height:1.2;}
+  body{margin:0;color:var(--body);background:#fff;line-height:1.65;-webkit-font-smoothing:antialiased;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  h1,h2,h3{color:var(--ink);line-height:1.22;}
   a{color:#3767d6;text-decoration:none;}
   a:hover{text-decoration:underline;}
-  .wrap{max-width:1040px;margin:0 auto;padding:0 24px;}
-  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--grad);color:#fff;
-    font-weight:700;font-size:1.05rem;padding:14px 30px;border-radius:12px;
-    box-shadow:0 8px 22px rgba(85,110,225,.32);transition:transform .12s,box-shadow .12s;}
-  .btn:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(85,110,225,.4);text-decoration:none;}
-  .btn.ghost{background:#eef2fb;color:#37507e;box-shadow:none;}
+  .wrap{max-width:680px;margin:0 auto;padding:0 24px;}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--grad);color:#fff;font-weight:700;
+    font-size:1.05rem;padding:14px 32px;border-radius:12px;box-shadow:0 8px 22px rgba(85,110,225,.3);
+    transition:transform .12s,box-shadow .12s;}
+  .btn:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(85,110,225,.38);text-decoration:none;}
 
   /* header */
-  header.nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.82);
-    backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line);}
-  .nav .wrap{display:flex;align-items:center;gap:14px;height:64px;}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--ink);font-size:1.05rem;}
-  .brand img{width:30px;height:30px;border-radius:8px;}
+  header.nav{border-bottom:1px solid var(--line);}
+  .nav .bar{max-width:960px;margin:0 auto;padding:0 24px;height:60px;display:flex;align-items:center;gap:12px;}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:800;color:var(--ink);}
+  .brand img{width:26px;height:26px;border-radius:7px;}
   .nav .spacer{flex:1;}
-  .nav a.small{color:var(--body);font-weight:600;font-size:.95rem;}
-  .nav .btn{padding:9px 18px;font-size:.95rem;}
+  .nav .ghost{color:var(--body);font-weight:600;font-size:.95rem;}
 
   /* hero */
-  .hero{background:radial-gradient(1200px 500px at 80% -10%,#eaf1ff 0,#fff 60%);
-    padding:70px 0 40px;}
-  .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;}
-  .pill{display:inline-block;background:#eef2fb;color:#3f5da8;font-weight:600;font-size:.82rem;
-    padding:6px 13px;border-radius:999px;margin-bottom:18px;}
-  .hero h1{font-size:2.9rem;margin:0 0 14px;letter-spacing:-.02em;}
-  .hero p.lead{font-size:1.22rem;color:var(--body);margin:0 0 26px;max-width:30ch;}
-  .cta-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .hero{text-align:center;padding:58px 0 8px;
+    background:radial-gradient(900px 380px at 50% -60px,#eef3ff 0,#fff 70%);}
+  .hero img.logo{width:76px;height:76px;border-radius:18px;box-shadow:0 10px 26px rgba(80,110,220,.28);}
+  .hero h1{font-size:2.6rem;margin:18px 0 8px;letter-spacing:-.02em;}
+  .hero p.lead{font-size:1.18rem;color:var(--body);margin:0 auto 24px;max-width:34ch;}
   .req{color:var(--muted);font-size:.86rem;margin-top:14px;}
+  .sub-link{display:block;margin-top:12px;font-size:.95rem;}
 
-  /* app mockup */
-  .mock{background:#fff;border:1px solid var(--line);border-radius:16px;
-    box-shadow:0 30px 60px -20px rgba(60,80,160,.35);overflow:hidden;}
-  .mock-bar{display:flex;align-items:center;gap:7px;padding:11px 14px;
-    background:#f3f4f8;border-bottom:1px solid var(--line);}
-  .mock-bar i{width:11px;height:11px;border-radius:50%;display:inline-block;}
-  .mock-bar .r{background:#ff5f57;}.mock-bar .y{background:#febc2e;}.mock-bar .g{background:#28c840;}
-  .mock-bar b{margin-left:8px;color:#5a6376;font-weight:700;font-size:.82rem;}
-  .mock-body{padding:18px;}
-  .mock-card{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px;background:#fff;}
-  .mock-card .lab{font-size:.68rem;font-weight:800;letter-spacing:.08em;color:#9aa1b2;}
-  .fields{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;color:#8a92a3;font-size:.85rem;}
-  .fields b{display:inline-block;min-width:44px;text-align:center;padding:7px 0;border:1px solid var(--line);
-    border-radius:8px;background:#f7f8fb;color:var(--ink);font-weight:600;}
-  .rate{color:var(--blue);font-weight:600;margin-top:12px;font-size:.92rem;}
-  .mock-actions{display:flex;gap:10px;}
-  .mock-actions .s{flex:0 0 auto;padding:11px 26px;border-radius:10px;color:#fff;font-weight:700;font-size:.95rem;}
-  .s.start{background:#34c759;}.s.stop{background:#d7dae1;color:#fff;}
-  .mock-hint{text-align:center;color:#9aa1b2;font-size:.8rem;margin-top:14px;}
+  .shot{text-align:center;padding:20px 0 8px;}
+  .shot img{width:100%;max-width:430px;height:auto;}
 
-  /* sections */
-  section.block{padding:56px 0;}
-  section.block.alt{background:var(--soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
-  .block h2{font-size:1.9rem;text-align:center;margin:0 0 8px;}
-  .block .subtitle{text-align:center;color:var(--muted);margin:0 auto 36px;max-width:56ch;}
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
-  .feat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;}
-  .feat .ic{width:44px;height:44px;border-radius:11px;background:var(--grad);display:flex;
-    align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:12px;}
-  .feat h3{font-size:1.08rem;margin:0 0 6px;}
-  .feat p{margin:0;color:var(--body);font-size:.96rem;}
+  /* content sections */
+  section{padding:40px 0;}
+  h2{font-size:1.55rem;text-align:center;margin:0 0 22px;}
+  .feats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .feat{text-align:center;padding:20px 14px;border:1px solid var(--line);border-radius:14px;background:#fff;}
+  .feat .ic{font-size:1.5rem;}
+  .feat h3{font-size:1rem;margin:8px 0 4px;}
+  .feat p{margin:0;font-size:.9rem;color:var(--body);}
 
-  .steps{max-width:640px;margin:0 auto;counter-reset:s;}
-  .step{display:flex;gap:16px;padding:14px 0;border-bottom:1px solid var(--line);}
+  .steps{counter-reset:s;border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+  .step{display:flex;gap:14px;padding:16px 18px;border-bottom:1px solid var(--line);align-items:flex-start;}
   .step:last-child{border-bottom:0;}
-  .step .n{counter-increment:s;flex:0 0 34px;height:34px;border-radius:50%;background:var(--grad);
-    color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;}
+  .step .n{counter-increment:s;flex:0 0 30px;height:30px;border-radius:50%;background:var(--grad);color:#fff;
+    font-weight:800;font-size:.9rem;display:flex;align-items:center;justify-content:center;}
   .step .n::before{content:counter(s);}
-  .step p{margin:4px 0 0;}
+  .step p{margin:3px 0 0;font-size:.98rem;}
 
-  .faq{max-width:720px;margin:0 auto;}
-  .faq details{border:1px solid var(--line);border-radius:12px;padding:2px 18px;margin-bottom:12px;background:#fff;}
-  .faq summary{cursor:pointer;font-weight:700;color:var(--ink);padding:15px 0;list-style:none;}
-  .faq summary::-webkit-details-marker{display:none;}
-  .faq summary::after{content:"+";float:right;color:var(--muted);font-weight:700;}
-  .faq details[open] summary::after{content:"–";}
-  .faq p{margin:0 0 16px;}
+  details{border:1px solid var(--line);border-radius:12px;padding:2px 18px;margin-bottom:10px;}
+  summary{cursor:pointer;font-weight:700;color:var(--ink);padding:14px 0;list-style:none;}
+  summary::-webkit-details-marker{display:none;}
+  summary::after{content:"+";float:right;color:var(--muted);font-weight:700;}
+  details[open] summary::after{content:"–";}
+  details p{margin:0 0 14px;font-size:.97rem;}
 
-  .cta{background:var(--grad);color:#fff;text-align:center;padding:56px 24px;}
-  .cta h2{color:#fff;font-size:1.9rem;margin:0 0 10px;}
-  .cta p{color:#eaf0ff;margin:0 0 24px;}
-  .cta .btn{background:#fff;color:#3a51c0;box-shadow:0 8px 22px rgba(0,0,0,.18);}
+  code{background:var(--soft);padding:2px 6px;border-radius:6px;border:1px solid var(--line);font-size:.88em;}
 
-  footer{text-align:center;color:var(--muted);font-size:.86rem;padding:34px 24px;background:#0f1420;}
-  footer a{color:#aab6d6;}
+  footer{text-align:center;color:var(--muted);font-size:.85rem;padding:30px 24px;border-top:1px solid var(--line);margin-top:16px;}
+  footer a{color:var(--body);}
 
-  @media(max-width:820px){
-    .hero{padding:44px 0 20px;}
-    .hero .wrap{grid-template-columns:1fr;gap:34px;}
-    .hero h1{font-size:2.2rem;}.hero p.lead{max-width:none;}
-    .grid{grid-template-columns:1fr;}
-    .nav a.small{display:none;}
+  @media(max-width:640px){
+    .hero{padding:40px 0 4px;}
+    .hero h1{font-size:2.1rem;}
+    .feats{grid-template-columns:1fr;}
   }
 </style>
 </head>
 <body>
 
 <header class="nav">
-  <div class="wrap">
-    <span class="brand"><img src="icon.png" width="30" height="30" alt="Autoclicker icon"> Autoclicker</span>
+  <div class="bar">
+    <span class="brand"><img src="icon.png" width="26" height="26" alt="Autoclicker icon"> Autoclicker for Mac</span>
     <span class="spacer"></span>
-    <a class="small" href="#features">Features</a>
-    <a class="small" href="#install">Install</a>
-    <a class="small" href="#faq">FAQ</a>
-    <a class="btn" href="https://github.com/ishaanniaj/Autoclicker/releases/latest/download/Autoclicker.dmg">Download</a>
+    <a class="ghost" href="https://github.com/ishaanniaj/Autoclicker">GitHub</a>
   </div>
 </header>
 
 <section class="hero">
   <div class="wrap">
-    <div>
-      <span class="pill">Free · Open source · Apple Silicon</span>
-      <h1>Autoclicker for&nbsp;Mac</h1>
-      <p class="lead">A free, lightweight auto clicker for macOS. Set your speed, pick a button, and click on autopilot.</p>
-      <div class="cta-row">
-        <a class="btn" href="https://github.com/ishaanniaj/Autoclicker/releases/latest/download/Autoclicker.dmg">⬇︎ Download for Mac</a>
-        <a class="btn ghost" href="https://github.com/ishaanniaj/Autoclicker">View on GitHub</a>
-      </div>
-      <p class="req">Free · Apple Silicon Macs (M1, M2, M3, M4) · macOS 11 or later</p>
-    </div>
-
-    <div class="mock" aria-hidden="true">
-      <div class="mock-bar"><i class="r"></i><i class="y"></i><i class="g"></i><b>Autoclicker</b></div>
-      <div class="mock-body">
-        <div class="mock-card">
-          <div class="lab">CLICK SPEED</div>
-          <div class="fields"><b>0</b> hrs <b>0</b> min <b>0</b> sec <b>100</b> ms</div>
-          <div class="rate">≈ 10 clicks per second</div>
-        </div>
-        <div class="mock-actions">
-          <span class="s start">▶ Start</span>
-          <span class="s stop">■ Stop</span>
-        </div>
-        <div class="mock-hint">Shortcut: press ` to start / stop</div>
-      </div>
-    </div>
+    <img class="logo" src="icon.png" width="76" height="76" alt="Autoclicker for Mac app icon">
+    <h1>Autoclicker for Mac</h1>
+    <p class="lead">A free, lightweight auto clicker for macOS. Set your speed, pick a button, and click on autopilot.</p>
+    <a class="btn" href="https://github.com/ishaanniaj/Autoclicker/releases/latest/download/Autoclicker.dmg">⬇︎ Download for Mac</a>
+    <div class="req">Free · Apple Silicon Macs (M1, M2, M3, M4) · macOS 11 or later</div>
   </div>
 </section>
 
-<section class="block" id="features">
+<div class="shot wrap">
+  <img src="app-window.png" width="430" alt="The Autoclicker control window on macOS, showing click-speed fields, mouse-button options, and a Start button">
+</div>
+
+<section>
   <div class="wrap">
-    <h2>Everything you need, nothing you don't</h2>
-    <p class="subtitle">A no-frills auto clicker that does one job well.</p>
-    <div class="grid">
-      <div class="feat"><div class="ic">⏱️</div><h3>Any speed</h3><p>From dozens of clicks per second to one every few minutes — set the exact interval.</p></div>
-      <div class="feat"><div class="ic">🖱️</div><h3>Any button</h3><p>Left, middle, or right click. Single or double click, your choice.</p></div>
-      <div class="feat"><div class="ic">⌨️</div><h3>Hotkey control</h3><p>Tap the <code>`</code> key to start or stop instantly — even while another app is in front.</p></div>
-      <div class="feat"><div class="ic">🔁</div><h3>Run or repeat</h3><p>Click until you stop it, or automatically stop after a set number of clicks.</p></div>
-      <div class="feat"><div class="ic">🪶</div><h3>Lightweight</h3><p>A tiny, focused app. Opens instantly, stays out of your way.</p></div>
-      <div class="feat"><div class="ic">🔓</div><h3>Free &amp; open source</h3><p>No ads, no sign-up, no cost. Read every line of code on GitHub.</p></div>
+    <div class="feats">
+      <div class="feat"><div class="ic">⏱️</div><h3>Any speed</h3><p>From many clicks per second to one every few minutes.</p></div>
+      <div class="feat"><div class="ic">🖱️</div><h3>Any button</h3><p>Left, middle, or right — single or double click.</p></div>
+      <div class="feat"><div class="ic">⌨️</div><h3>Hotkey</h3><p>Tap <code>`</code> to start or stop from any app.</p></div>
     </div>
   </div>
 </section>
 
-<section class="block alt" id="install">
+<section>
   <div class="wrap">
     <h2>Install in under a minute</h2>
-    <p class="subtitle">No Terminal, no setup — just download and drag.</p>
     <div class="steps">
       <div class="step"><span class="n"></span><p><a href="https://github.com/ishaanniaj/Autoclicker/releases/latest/download/Autoclicker.dmg"><strong>Download Autoclicker.dmg</strong></a> and open it.</p></div>
       <div class="step"><span class="n"></span><p>Drag <strong>Autoclicker</strong> onto the <strong>Applications</strong> folder.</p></div>
-      <div class="step"><span class="n"></span><p>Open it from Applications — first time, right-click → <strong>Open</strong> → <strong>Open</strong>. (If macOS says it can't verify the developer, go to <strong>System Settings → Privacy &amp; Security</strong> → <strong>Open Anyway</strong>.)</p></div>
+      <div class="step"><span class="n"></span><p>Open it — first time, right-click → <strong>Open</strong> → <strong>Open</strong>. (If macOS can't verify the developer, go to <strong>System Settings → Privacy &amp; Security</strong> → <strong>Open Anyway</strong>.)</p></div>
       <div class="step"><span class="n"></span><p>Enable it under <strong>System Settings → Privacy &amp; Security → Accessibility</strong> so it can click, then quit and reopen.</p></div>
     </div>
   </div>
 </section>
 
-<section class="block">
-  <div class="wrap">
-    <h2>What people use it for</h2>
-    <p class="subtitle">An auto clicker saves your finger from endless clicking.</p>
-    <div class="grid">
-      <div class="feat"><div class="ic">🎮</div><h3>Games</h3><p>Idle games, clickers, and AFK farming without wearing out your mouse.</p></div>
-      <div class="feat"><div class="ic">📋</div><h3>Repetitive tasks</h3><p>Clicking through forms, lists, or the same button over and over.</p></div>
-      <div class="feat"><div class="ic">🧪</div><h3>Testing</h3><p>Stress-test a button or interface you're building.</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="block alt" id="faq">
+<section>
   <div class="wrap">
     <h2>Frequently asked questions</h2>
-    <p class="subtitle">&nbsp;</p>
-    <div class="faq">
-      <details open><summary>Is this autoclicker free?</summary><p>Yes — it's completely free and open source.</p></details>
-      <details><summary>Does it work on Windows?</summary><p>No. This is a macOS app for <strong>Apple Silicon Macs</strong> (M1, M2, M3, M4). It does not run on Windows, Chromebooks, or older Intel Macs.</p></details>
-      <details><summary>Is it safe?</summary><p>Yes. It's open source — you can read all the code on <a href="https://github.com/ishaanniaj/Autoclicker">GitHub</a>. The one-time "unverified developer" prompt appears because the app isn't paid-registered with Apple, not because anything is wrong with it.</p></details>
-      <details><summary>How do I change the click speed?</summary><p>Type a number in the <strong>Click interval</strong> boxes (hours / minutes / seconds / milliseconds). For example, 100&nbsp;ms means about 10 clicks per second.</p></details>
-      <details><summary>How do I start and stop it?</summary><p>Press the <strong>Start</strong> button, or tap the <code>`</code> (backtick) key — it works even when another app is in front.</p></details>
-    </div>
+    <details open><summary>Is this autoclicker free?</summary><p>Yes — it's completely free and open source.</p></details>
+    <details><summary>Does it work on Windows?</summary><p>No. This is a macOS app for <strong>Apple Silicon Macs</strong> (M1, M2, M3, M4). It does not run on Windows, Chromebooks, or older Intel Macs.</p></details>
+    <details><summary>Is it safe?</summary><p>Yes. It's open source — you can read all the code on <a href="https://github.com/ishaanniaj/Autoclicker">GitHub</a>. The one-time "unverified developer" prompt appears because the app isn't paid-registered with Apple, not because anything is wrong with it.</p></details>
+    <details><summary>How do I change the click speed?</summary><p>Type a number in the <strong>Click interval</strong> boxes (hours / minutes / seconds / milliseconds). For example, 100&nbsp;ms means about 10 clicks per second.</p></details>
+    <details><summary>How do I start and stop it?</summary><p>Press the <strong>Start</strong> button, or tap the <code>`</code> (backtick) key — it works even when another app is in front.</p></details>
   </div>
 </section>
-
-<div class="cta">
-  <h2>Ready to click on autopilot?</h2>
-  <p>Free download for Apple Silicon Macs.</p>
-  <a class="btn" href="https://github.com/ishaanniaj/Autoclicker/releases/latest/download/Autoclicker.dmg">⬇︎ Download Autoclicker for Mac</a>
-</div>
 
 <footer>
   Autoclicker for Mac — free &amp; open source · <a href="https://github.com/ishaanniaj/Autoclicker">View on GitHub</a><br>
