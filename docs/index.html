@@ -14,8 +14,13 @@
 <meta property="og:title" content="Autoclicker for Mac — Free Auto Clicker for macOS">
 <meta property="og:description" content="A free, lightweight autoclicker for Mac. Set your speed, pick a mouse button, start/stop with a hotkey. Apple Silicon (M1–M4).">
 <meta property="og:url" content="https://ishaanniaj.github.io/Autoclicker/">
-<meta property="og:image" content="https://ishaanniaj.github.io/Autoclicker/icon.png">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://ishaanniaj.github.io/Autoclicker/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Autoclicker for Mac — Free Auto Clicker for macOS">
+<meta name="twitter:description" content="Free, lightweight auto clicker for Apple Silicon Macs. Adjustable speed, hotkey start/stop.">
+<meta name="twitter:image" content="https://ishaanniaj.github.io/Autoclicker/og-image.png">
 
 <!-- Structured data: helps Google understand this is a downloadable app -->
 <script type="application/ld+json">
@@ -29,6 +34,26 @@
   "downloadUrl": "https://github.com/ishaanniaj/Autoclicker/releases/latest/download/Autoclicker.dmg",
   "softwareVersion": "1.0.0",
   "description": "A free, lightweight autoclicker for macOS with adjustable click speed, mouse-button choice, and a global start/stop hotkey."
+}
+</script>
+
+<!-- FAQ structured data (can show expandable Q&As in Google results) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "Is this autoclicker free?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes — it's completely free and open source." } },
+    { "@type": "Question", "name": "Does it work on Windows?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. This is a macOS app for Apple Silicon Macs (M1, M2, M3, M4). It does not run on Windows, Chromebooks, or older Intel Macs." } },
+    { "@type": "Question", "name": "Is it safe?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. It's open source, so you can read all the code on GitHub. The one-time unverified-developer prompt appears because the app isn't paid-registered with Apple, not because anything is wrong with it." } },
+    { "@type": "Question", "name": "How do I change the click speed?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Type a number in the Click interval boxes (hours, minutes, seconds, milliseconds). For example, 100 ms means about 10 clicks per second." } },
+    { "@type": "Question", "name": "How do I start and stop it?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Press the Start button, or tap the backtick key. It works even when another app is in front." } }
+  ]
 }
 </script>
 
@@ -60,7 +85,7 @@
 <body>
 
 <header>
-  <img src="icon.png" alt="Autoclicker for Mac app icon">
+  <img src="icon.png" width="96" height="96" alt="Autoclicker for Mac app icon">
   <h1>Autoclicker for Mac</h1>
   <p class="sub">A free, lightweight auto clicker for macOS.</p>
   <a class="btn" href="https://github.com/ishaanniaj/Autoclicker/releases/latest/download/Autoclicker.dmg">⬇︎ Download for Mac</a>
@@ -80,6 +105,19 @@
       <li>Run continuously or stop after a set number of clicks</li>
       <li>Global hotkey — tap the <code>`</code> (backtick) key to start or stop from any app</li>
     </ul>
+  </section>
+
+  <section>
+    <h2>What people use a Mac autoclicker for</h2>
+    <p>An auto clicker saves your finger from endless clicking. Common uses on Mac:</p>
+    <ul>
+      <li><strong>Games</strong> — idle games, clickers, and AFK farming</li>
+      <li><strong>Repetitive work</strong> — clicking through forms, lists, or the same button over and over</li>
+      <li><strong>Testing</strong> — stress-testing a button or UI you're building</li>
+      <li><strong>Accessibility</strong> — reducing strain from repeated manual clicking</li>
+    </ul>
+    <p>Because you can set the exact interval and the mouse button, it works whether
+       you need rapid-fire clicks or one slow, steady click every few seconds.</p>
   </section>
 
   <section>
@@ -119,7 +157,8 @@
 </main>
 
 <footer>
-  Free &amp; open source · <a href="https://github.com/ishaanniaj/Autoclicker">View on GitHub</a>
+  Autoclicker for Mac — free &amp; open source · <a href="https://github.com/ishaanniaj/Autoclicker">View on GitHub</a><br>
+  Works on Apple Silicon Macs (M1, M2, M3, M4) · macOS 11 or later
 </footer>
 
 </body>
