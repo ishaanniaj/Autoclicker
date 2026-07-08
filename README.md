@@ -18,7 +18,7 @@ until that permission is granted.
 - Left, middle, or right mouse button
 - Single or double click
 - Fixed repeat count or click-until-stopped
-- Global keyboard shortcut toggle (**`** backtick) to start/stop without focusing the window
+- Global keyboard shortcut to start/stop without focusing the window — rebindable to any key (**`** backtick by default)
 
 ## How to run it
 Once installed (see **Download** above), open **Autoclicker** from Launchpad,

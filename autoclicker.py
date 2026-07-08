@@ -14,6 +14,7 @@ Requires: pynput   ->   pip install pynput
 """
 
 import ctypes
+import json
 import os
 import sys
 import threading
@@ -55,10 +56,47 @@ def is_trusted():
         return True  # if we can't tell, don't nag
 
 
-# ---- toggle hotkey: the backtick ` key (top-left, above Tab) ----
+# ---- default start/stop shortcut: the backtick ` key (above Tab) ----
 TOGGLE_CHAR = "`"
 TOGGLE_LABEL = "`"
 TOGGLE_KEYCODE = 50   # macOS virtual key code for the ` / ~ key (kVK_ANSI_Grave)
+
+# Tk keysym -> macOS virtual key code (kVK_*), so a chosen key maps to the
+# code CGEventSourceKeyState expects. Falls back to event.keycode if missing.
+KEYSYM_TO_KVK = {
+    "a": 0, "s": 1, "d": 2, "f": 3, "h": 4, "g": 5, "z": 6, "x": 7, "c": 8,
+    "v": 9, "b": 11, "q": 12, "w": 13, "e": 14, "r": 15, "y": 16, "t": 17,
+    "o": 31, "u": 32, "i": 34, "p": 35, "l": 37, "j": 38, "k": 40, "n": 45,
+    "m": 46,
+    "1": 18, "2": 19, "3": 20, "4": 21, "5": 23, "6": 22, "7": 26, "8": 28,
+    "9": 25, "0": 29,
+    "grave": 50, "minus": 27, "equal": 24, "bracketleft": 33,
+    "bracketright": 30, "semicolon": 41, "apostrophe": 39, "comma": 43,
+    "period": 47, "slash": 44, "backslash": 42,
+    "space": 49, "Return": 36, "Tab": 48, "BackSpace": 51,
+    "Left": 123, "Right": 124, "Down": 125, "Up": 126,
+    "F1": 122, "F2": 120, "F3": 99, "F4": 118, "F5": 96, "F6": 97, "F7": 98,
+    "F8": 100, "F9": 101, "F10": 109, "F11": 103, "F12": 111,
+}
+
+# ---- saved-preferences file (remembers a custom shortcut key) ----
+CONFIG_PATH = os.path.expanduser("~/.autoclicker_config.json")
+
+
+def load_config():
+    try:
+        with open(CONFIG_PATH) as fh:
+            return json.load(fh)
+    except Exception:
+        return {}
+
+
+def save_config(data):
+    try:
+        with open(CONFIG_PATH, "w") as fh:
+            json.dump(data, fh)
+    except OSError:
+        pass
 
 # ---- color palette (light, iOS-ish) ----
 BG = "#f2f2f7"
@@ -129,6 +167,7 @@ class HotkeyManager:
         self.root = root
         self.on_toggle = on_toggle
         self.keycode = keycode
+        self.char = char
         self._prev_down = False
         self._active = True
         self._quartz = None
@@ -141,7 +180,13 @@ class HotkeyManager:
             except ImportError:
                 self._active = False  # fall back to the on-screen buttons
         else:
-            self._start_pynput(char)
+            self._start_pynput()
+
+    def set_key(self, keycode, char):
+        """Rebind the shortcut to a different key (takes effect immediately)."""
+        self.keycode = keycode
+        self.char = char
+        self._prev_down = False
 
     def _poll(self):
         if not self._active:
@@ -160,10 +205,10 @@ class HotkeyManager:
         self._prev_down = down
         self.root.after(self.POLL_MS, self._poll)
 
-    def _start_pynput(self, char):
+    def _start_pynput(self):
         def on_press(key):
             try:
-                if key.char == char:
+                if key.char == self.char:
                     self.root.after(0, self.on_toggle)
             except AttributeError:
                 pass
@@ -209,6 +254,12 @@ class AutoClickerApp:
     def __init__(self, root):
         self.root = root
         self.click_thread = None
+        self._capturing = False
+        self._capture_binding = None
+        cfg = load_config()
+        self._key_code = cfg.get("keycode", TOGGLE_KEYCODE)
+        self._key_char = cfg.get("char") or TOGGLE_CHAR
+        self.toggle_label = cfg.get("label", TOGGLE_LABEL)
         root.title("AutoClicker")
         root.configure(bg=BG)
         root.resizable(False, False)
@@ -325,6 +376,24 @@ class AutoClickerApp:
         tk.Label(rrow, text="times", font=self.f_body, bg=CARD,
                  fg=TEXT).grid(row=0, column=2)
 
+        # ---- shortcut card ----
+        card4 = self._card(outer)
+        self._section(card4, "SHORTCUT")
+        srow = tk.Frame(card4, bg=CARD)
+        srow.pack(anchor="w", pady=(8, 0))
+        tk.Label(srow, text="Start / stop key", font=self.f_body, bg=CARD,
+                 fg=TEXT).grid(row=0, column=0)
+        self.shortcut_key_var = tk.StringVar(value=self.toggle_label)
+        self.key_chip = tk.Label(srow, textvariable=self.shortcut_key_var,
+                                 font=self.f_entry, bg="#f7f7fa", fg=TEXT,
+                                 padx=14, pady=2, highlightthickness=1,
+                                 highlightbackground=BORDER)
+        self.key_chip.grid(row=0, column=1, padx=(10, 12))
+        self.change_btn = tk.Label(srow, text="Change", font=self.f_body,
+                                   bg=CARD, fg=ACCENT, cursor="pointinghand")
+        self.change_btn.grid(row=0, column=2)
+        self.change_btn.bind("<Button-1>", lambda e: self._capture_shortcut())
+
         # ---- controls ----
         ctrl = tk.Frame(outer, bg=BG)
         ctrl.pack(pady=(16, 4))
@@ -336,7 +405,9 @@ class AutoClickerApp:
         self.stop_btn.grid(row=0, column=1, padx=6)
         self.stop_btn.set_enabled(False)
 
-        tk.Label(outer, text=f"Shortcut:  press  {TOGGLE_LABEL}  to start / stop",
+        self.hint_var = tk.StringVar(
+            value=f"Shortcut:  press  {self.toggle_label}  to start / stop")
+        tk.Label(outer, textvariable=self.hint_var,
                  font=self.f_hint, bg=BG, fg=MUTED).pack(pady=(8, 2))
 
         self.status = tk.StringVar(value="● Idle")
@@ -347,9 +418,67 @@ class AutoClickerApp:
         self._update_rate()
         self._check_perm()
 
-        # ---- global hotkey ----
-        self.hotkey = HotkeyManager(root, self.toggle, TOGGLE_KEYCODE, TOGGLE_CHAR)
+        # ---- global shortcut ----
+        self.hotkey = HotkeyManager(root, self.toggle, self._key_code,
+                                    self._key_char)
         root.protocol("WM_DELETE_WINDOW", self.on_close)
+
+    # ---------- shortcut capture ----------
+    def _key_label(self, event):
+        special = {
+            "grave": "`", "space": "Space", "Return": "Return", "Tab": "Tab",
+            "BackSpace": "⌫", "Delete": "⌦", "minus": "-", "equal": "=",
+            "bracketleft": "[", "bracketright": "]", "semicolon": ";",
+            "apostrophe": "'", "comma": ",", "period": ".", "slash": "/",
+            "backslash": "\\", "Escape": "Esc",
+        }
+        ks = event.keysym
+        if ks in special:
+            return special[ks]
+        if len(ks) == 1:
+            return ks.upper()
+        return ks  # F1, Left, Up, etc.
+
+    def _capture_shortcut(self):
+        if self._capturing:
+            return
+        self._capturing = True
+        self.shortcut_key_var.set("press a key…")
+        self.key_chip.config(fg=ACCENT)
+        self.change_btn.config(text="Cancel")
+        self._capture_binding = self.root.bind("<KeyPress>", self._on_capture_key)
+
+    def _on_capture_key(self, event):
+        if not self._capturing:
+            return
+        modifiers = {"Shift_L", "Shift_R", "Control_L", "Control_R", "Alt_L",
+                     "Alt_R", "Meta_L", "Meta_R", "Caps_Lock", "Option_L",
+                     "Option_R", "Command_L", "Command_R"}
+        if event.keysym in modifiers:
+            return  # ignore lone modifier keys, keep listening
+        if event.keysym == "Escape":
+            self._finish_capture()   # cancel, keep old key
+            return
+        char = event.char if event.char else None
+        ks = event.keysym
+        lookup = ks.lower() if len(ks) == 1 and ks.isalpha() else ks
+        keycode = KEYSYM_TO_KVK.get(lookup, event.keycode)
+        self.toggle_label = self._key_label(event)
+        self.hotkey.set_key(keycode, char)
+        self.hint_var.set(
+            f"Shortcut:  press  {self.toggle_label}  to start / stop")
+        save_config({"keycode": keycode, "char": char or "",
+                     "label": self.toggle_label})
+        self._finish_capture()
+
+    def _finish_capture(self):
+        self._capturing = False
+        self.key_chip.config(fg=TEXT)
+        self.change_btn.config(text="Change")
+        self.shortcut_key_var.set(self.toggle_label)
+        if self._capture_binding:
+            self.root.unbind("<KeyPress>", self._capture_binding)
+            self._capture_binding = None
 
     def _check_perm(self):
         """Show/hide the Accessibility warning banner based on trust state."""
