@@ -1,7 +1,7 @@
 # AutoClicker
 
 A simple cross-platform auto clicker with a small Tkinter GUI. Clicks
-automatically at a rate you choose, toggled with the global **`** (backtick) hotkey.
+automatically at a rate you choose, toggled with the global **`** (backtick) keyboard shortcut.
 
 ## Download (macOS, Apple Silicon)
 **[⬇︎ Download AutoClicker.dmg](https://github.com/ishaanniaj/Autoclicker/releases/latest/download/AutoClicker.dmg)** —
@@ -18,7 +18,7 @@ until that permission is granted.
 - Left, middle, or right mouse button
 - Single or double click
 - Fixed repeat count or click-until-stopped
-- Global hotkey toggle (**`** backtick) to start/stop without focusing the window
+- Global keyboard shortcut toggle (**`** backtick) to start/stop without focusing the window
 
 ## How to run it
 Once installed (see **Download** above), open **Autoclicker** from Launchpad,
@@ -27,7 +27,7 @@ Spotlight, or your Applications folder — then:
 1. **Grant permission (first time only).** The app shows a red banner until you
    enable it under **System Settings → Privacy & Security → Accessibility**
    (turn **Autoclicker** ON), then quit and reopen. Without this, clicks and the
-   hotkey won't fire.
+   keyboard shortcut won't fire.
 2. **Set the click speed** in the *Click interval* boxes — hours / minutes /
    seconds / milliseconds (100 ms ≈ 10 clicks per second).
 3. **Choose** the mouse **button** (left / middle / right) and **type**
