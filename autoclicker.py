@@ -79,6 +79,16 @@ KEYSYM_TO_KVK = {
     "F8": 100, "F9": 101, "F10": 109, "F11": 103, "F12": 111,
 }
 
+# The same, but keyed by the actual character a key produces — more reliable
+# than keysym names for punctuation like ` - = [ ] etc. (which Tk may report
+# as the raw character rather than a name).
+_PUNCT_CHAR_TO_KVK = {
+    "`": 50, "-": 27, "=": 24, "[": 33, "]": 30, ";": 41, "'": 39, ",": 43,
+    ".": 47, "/": 44, "\\": 42, " ": 49,
+}
+CHAR_TO_KVK = {k: v for k, v in KEYSYM_TO_KVK.items() if len(k) == 1}
+CHAR_TO_KVK.update(_PUNCT_CHAR_TO_KVK)
+
 # ---- saved-preferences file (remembers a custom shortcut key) ----
 CONFIG_PATH = os.path.expanduser("~/.autoclicker_config.json")
 
@@ -424,17 +434,33 @@ class AutoClickerApp:
         root.protocol("WM_DELETE_WINDOW", self.on_close)
 
     # ---------- shortcut capture ----------
+    def _keycode_for(self, event):
+        """macOS virtual key code for a captured key, matched by the character
+        it produces first (reliable for punctuation like ` ), then by keysym."""
+        ch = event.char
+        if ch:
+            if ch in CHAR_TO_KVK:
+                return CHAR_TO_KVK[ch]
+            if ch.lower() in CHAR_TO_KVK:   # e.g. shifted letters
+                return CHAR_TO_KVK[ch.lower()]
+        ks = event.keysym
+        if ks in KEYSYM_TO_KVK:
+            return KEYSYM_TO_KVK[ks]
+        if ks.lower() in KEYSYM_TO_KVK:
+            return KEYSYM_TO_KVK[ks.lower()]
+        return event.keycode
+
     def _key_label(self, event):
         special = {
             "grave": "`", "space": "Space", "Return": "Return", "Tab": "Tab",
-            "BackSpace": "⌫", "Delete": "⌦", "minus": "-", "equal": "=",
-            "bracketleft": "[", "bracketright": "]", "semicolon": ";",
-            "apostrophe": "'", "comma": ",", "period": ".", "slash": "/",
-            "backslash": "\\", "Escape": "Esc",
+            "BackSpace": "⌫", "Delete": "⌦", "Escape": "Esc",
         }
         ks = event.keysym
         if ks in special:
             return special[ks]
+        ch = event.char
+        if ch and ch.isprintable() and ch != " ":
+            return ch.upper() if ch.isalpha() else ch
         if len(ks) == 1:
             return ks.upper()
         return ks  # F1, Left, Up, etc.
@@ -460,9 +486,7 @@ class AutoClickerApp:
             self._finish_capture()   # cancel, keep old key
             return
         char = event.char if event.char else None
-        ks = event.keysym
-        lookup = ks.lower() if len(ks) == 1 and ks.isalpha() else ks
-        keycode = KEYSYM_TO_KVK.get(lookup, event.keycode)
+        keycode = self._keycode_for(event)
         self.toggle_label = self._key_label(event)
         self.hotkey.set_key(keycode, char)
         self.hint_var.set(
